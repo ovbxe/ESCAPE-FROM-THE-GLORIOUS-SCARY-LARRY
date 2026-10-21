@@ -12,5 +12,67 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <!-- Stamina Bar -->
+<div class="stamina-wrap">
+  <div class="stamina-fill" id="staminaBar"></div>
+</div>
+
+<script>
+  let stamina = 100;
+  let isSprinting = false;
+  let sprintKey = false;
+  
+  // Detect Shift key
+  window.addEventListener('keydown', (e) => { if (e.key === 'Shift') sprintKey = true; });
+  window.addEventListener('keyup', (e) => { if (e.key === 'Shift') sprintKey = false; });
+
+  // Update Stamina loop
+  setInterval(() => {
+    const bar = document.getElementById('staminaBar');
+    if (!bar) return;
+    
+    if (sprintKey && stamina > 0) {
+      stamina -= 2; // Drain speed
+      isSprinting = true;
+    } else {
+      stamina += 1; // Regen speed
+      isSprinting = false;
+    }
+    
+    // Keep between 0 and 100
+    if (stamina > 100) stamina = 100;
+    if (stamina < 0) stamina = 0;
+    
+    // Update UI
+    bar.style.width = stamina + '%';
+    bar.style.background = stamina < 30 ? '#e63946' : '#c98632';
+  }, 50);
+</script>
+    <script>
+  // Sound Engine
+  function beep(freq = 440, dur = 0.15, type = 'square', vol = 0.15) {
+    const ctx = beep._ctx || (beep._ctx = new (window.AudioContext || window.webkitAudioContext)());
+    if (ctx.state === 'suspended') ctx.resume();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+    o.connect(g).connect(ctx.destination);
+    o.start(); o.stop(ctx.currentTime + dur);
+  }
+
+  // Trigger a beep when pressing 'E' (Fuse pickup example)
+  window.addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'e') {
+      beep(880, 0.12, 'triangle', 0.2); // Fuse sound
+    }
+  });
+</script>
+          // Water squirt sound
+      window.playSquirt = function() {
+        beep(600, 0.1, 'sine', 0.2); 
+        setTimeout(() => beep(400, 0.15, 'sine', 0.2), 50); 
+      };
   </body>
 </html>
